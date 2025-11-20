@@ -46,6 +46,24 @@ def get_current_directory_items() -> Tuple[List[Path], List[Path]]:
     return sorted(directories), sorted(image_files)
 
 
+def get_directory_items(path: Path) -> Tuple[List[Path], List[Path]]:
+    """Get directories and image files in a specific directory."""
+    directories = []
+    image_files = []
+    
+    try:
+        for item in path.iterdir():
+            if item.is_dir() and not item.name.startswith('.'):
+                directories.append(item)
+            elif item.is_file():
+                if item.suffix.lower() in IMAGE_EXTENSIONS:
+                    image_files.append(item)
+    except PermissionError:
+        pass
+    
+    return sorted(directories), sorted(image_files)
+
+
 def format_file_size(path: Path) -> str:
     """Format file size for display."""
     try:
@@ -78,25 +96,47 @@ def select_conversion_type() -> str:
     return choice
 
 
-def select_file_or_directory(conversion_type: str) -> Optional[Path]:
-    """Step 2: Select file or directory."""
-    directories, image_files = get_current_directory_items()
+def browse_for_file(start_path: Path) -> Optional[Path]:
+    """Browse directories to select a file, allowing navigation into subdirectories."""
+    current_path = start_path
     
-    if conversion_type == "file":
-        if not image_files:
-            print("❌ No image files found in current directory.")
+    while True:
+        directories, image_files = get_directory_items(current_path)
+        
+        # Build choices list
+        choices = []
+        
+        # Add "go up" option (always available except at filesystem root)
+        if current_path != current_path.parent:  # Not at root
+            choices.append(
+                questionary.Choice("⬆️  .. (go up)", "..")
+            )
+        
+        # Add directories
+        for dir in directories:
+            choices.append(
+                questionary.Choice(f"📁 {dir.name}/", dir)
+            )
+        
+        # Add image files
+        for file in image_files:
+            choices.append(
+                questionary.Choice(
+                    f"📄 {file.name} ({format_file_size(file)})",
+                    file
+                )
+            )
+        
+        if not choices:
+            print(f"❌ No files or directories found in {current_path}")
             return None
         
-        choices = [
-            questionary.Choice(
-                f"📄 {file.name} ({format_file_size(file)})",
-                file
-            )
-            for file in image_files
-        ]
+        # Show current path in prompt
+        rel_path = current_path.relative_to(start_path) if current_path != start_path else Path(".")
+        prompt = f"Select a file (current: {rel_path}/):"
         
         selected = questionary.select(
-            "Select an image file:",
+            prompt,
             choices=choices,
             style=questionary.Style([
                 ('question', 'fg:#673ab7 bold'),
@@ -105,9 +145,33 @@ def select_file_or_directory(conversion_type: str) -> Optional[Path]:
             ])
         ).ask()
         
-        return selected
+        if selected == "..":
+            # Go up one directory
+            current_path = current_path.parent
+            continue
+        elif isinstance(selected, Path):
+            if selected.is_file():
+                # File selected, return it
+                return selected
+            elif selected.is_dir():
+                # Directory selected, navigate into it
+                current_path = selected
+                continue
+        
+        return None
+
+
+def select_file_or_directory(conversion_type: str) -> Optional[Path]:
+    """Step 2: Select file or directory."""
+    start_path = Path.cwd()
+    
+    if conversion_type == "file":
+        # Use file browser that allows navigating subdirectories
+        return browse_for_file(start_path)
     
     else:  # directory
+        directories, _ = get_current_directory_items()
+        
         if not directories:
             print("❌ No directories found in current directory.")
             return None
