@@ -1,4 +1,6 @@
-# FFmpeg CLI Wizard
+<img width="1920" height="1280" alt="image" src="https://github.com/user-attachments/assets/a3f19ab2-b826-431b-85e0-18e3d854bc97" />
+
+# FFmpeg CLI Wizard 🧙‍♂️
 
 En AI slop wizard for å konvertere med ffmpeg. <3. Laget med opprinnelig for å hjelpe med å konverte thumbnails til sanity sidebyggere. Resten her er KI beskrivelsen av prosjektet
 
