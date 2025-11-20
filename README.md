@@ -1,6 +1,6 @@
 # FFmpeg CLI Wizard
 
-An interactive command-line tool for batch image conversion using FFmpeg with a beautiful, user-friendly wizard interface.
+En AI slop wizard for å konvertere med ffmpeg. <3. Laget med opprinnelig for å hjelpe med å konverte thumbnails til sanity sidebyggere. Resten her er KI beskrivelsen av prosjektet
 
 ## Features
 
