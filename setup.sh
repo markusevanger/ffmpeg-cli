@@ -15,9 +15,16 @@ if ! command -v ffmpeg &> /dev/null; then
     echo "Warning: FFmpeg is not installed. Please install it with: brew install ffmpeg"
 fi
 
-# Install Python dependencies
-echo "Installing Python dependencies..."
-pip3 install -r requirements.txt
+# Create virtual environment if it doesn't exist
+if [ ! -d "venv" ]; then
+    echo "Creating virtual environment..."
+    python3 -m venv venv
+fi
+
+# Activate virtual environment and install dependencies
+echo "Activating virtual environment and installing Python dependencies..."
+source venv/bin/activate
+pip install -r requirements.txt
 
 # Make script executable
 echo "Making script executable..."
@@ -25,6 +32,9 @@ chmod +x ffmpeg_wizard.py
 
 echo "Setup complete!"
 echo ""
-echo "To use the wizard, run: ./ffmpeg_wizard.py"
-echo "Or add it to your PATH to use it from anywhere."
+echo "To use the wizard:"
+echo "1. Activate the virtual environment: source venv/bin/activate"
+echo "2. Run the wizard: ./ffmpeg_wizard.py"
+echo ""
+echo "Or add it to your PATH to use it from anywhere (after activating the venv)."
 
